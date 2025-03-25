@@ -1,0 +1,470 @@
+---
+---
+---
+
+# Regional Trends and Analysis of Spotify 2024 Top Songs
+
+This analysis presents the cleaning, structuring, and Exploratory Data Analysis for the Top Spotify Songs in 73 countries, sourced from Kaggle.
+
+## Import libraries
+
+`library(tidyverse)`\
+`library(ggplot2)`\
+`library(tidyr)`
+
+## Load dataframe
+
+`df <- read_csv("~/Certificados/R_portfolio_project/universal_top_spotify_songs.csv")`
+
+## Data frame inspection
+
+-   1468130 rows x 25 columns
+-   chr (5): spotify_id, name, artists, country, album_name
+-   dbl (17): daily_rank, daily_movement, weekly_movement, popularity, duration_ms, danceability...
+-   lgl (1): is_explicit
+-   date (2): snapshot_date, album_release_date
+
+## Cleaning and structuring
+
+### Check for missing values
+
+`na_counts <- colSums(is.na(df))`
+
+|                    |         |
+|--------------------|---------|
+| **Column**         | **NAs** |
+| name               | 29      |
+| artists            | 28      |
+| country            | 20007   |
+| album_name         | 670     |
+| album_release_date | 507     |
+
+From the data set information, we know that the NA values in the country column represent the playlist for “Global Top 50”.
+
+### Change country NAs to "GO"
+
+`df <- df |>`
+
+`mutate(country = ifelse(is.na(country), "GO", country))`
+
+### Remove remaining NAs
+
+`df <- df |>`
+
+`drop_na()`
+
+### Check for duplicates
+
+`duplicates <- duplicated(df)`
+
+`true_dups <- sum(duplicates)`
+
+There are no duplicates.
+
+### Change duration_ms to duration_min (milliseconds to minutes)
+
+`df <- df |>`
+
+`mutate(duration_min = duration_ms / (1000 * 60)) |>`
+
+`select(-duration_ms)`
+
+### Check for outliers
+
+#### Popularity
+
+Boxplot for popularity
+
+`boxplot(df$popularity,`
+
+`main = "Popularity on Spotify",`
+
+`xlab = "popularity",`
+
+`col = "lightgreen"` `)`
+
+From the boxplot we can see there are several outliers on lower end of the plot.
+
+We'll use the IQR to find the values.
+
+`pop_q1 <- quantile(df$popularity, 0.25)`\
+First quartile = 65
+
+`pop_q3 <- quantile(df$popularity, 0.75)`\
+Third quartile = 88
+
+`pop_iqr <- pop_q3 - pop_q1`\
+IQR = 23
+
+`pop_lower_bound <- pop_q1 - 1.5 * pop_iqr`\
+Lower limit = 30.5
+
+`pop_upper_bound <- pop_q3 + 1.5 * pop_iqr`\
+Upper limit = 122
+
+`pop_outliers <- df$popularity[df$popularity < pop_lower_bound | df$popularity > pop_upper_bound]`
+
+There are 13,895 outliers in popularity.
+
+0.95% of the entries are outliers in popularity.
+
+`df$popularity[df$popularity > upper_bound]`
+
+All the outliers are on the low end of the plot.
+
+#### duration_min
+
+Boxplot for duration_min
+
+`boxplot(df$duration_min,`
+
+`main = "Duration of Songs",`
+
+`xlab = "duration",`
+
+`col = "lightgreen")`
+
+50% of the values are located in a very small section of the plot.
+
+`dur_q1 <- quantile(df$duration_min, 0.25)`
+
+First quartile = 2.68
+
+`dur_q3 <- quantile(df$duration_min, 0.75)`
+
+Third quartile = 3.61
+
+`dur_iqr <- dur_q3 - dur_q1`\
+IQR = 0.937
+
+`dur_lower_bound <- dur_q1 - 1.5 * dur_iqr`
+
+Lower limit = 1.27
+
+`dur_upper_bound <- dur_q3 + 1.5 * dur_iqr`
+
+Upper limit = 5.05
+
+`dur_outliers <- df$duration_min[df$duration_min < dur_lower_bound | df$duration_min > dur_upper_bound]`
+
+There are 36,939 outliers in duration_min.
+
+2.52% of the entries are outliers in duration_min.
+
+`tibble(df$duration_min[df$duration_min < dur_lower_bound])`
+
+There are 1,620 outliers on the low end of the plot.
+
+`tibble(df$duration_min[df$duration_min > dur_upper_bound])`
+
+There are 35,319 outliers on the high end of the plot.
+
+#### danceability
+
+Boxplot for danceability
+
+`boxplot(df$danceability,`
+
+`main = "Danceability of Songs",`
+
+`xlab = "danceability",`
+
+`col = "lightgreen" )`
+
+There are outliers on the low end of the plot.
+
+`quantile(df$danceability, 0.25)`
+
+First quartile = 0.594
+
+`quantile(df$danceability, 0.75)`
+
+Third quartile = 0.787
+
+50% of the outliers go from 0.594 to 0.787.
+
+#### energy
+
+Boxplot for energy
+
+`boxplot(df$energy,`
+
+`main = "Energy of Songs",`
+
+`xlab = "energy",`
+
+`col = "lightgreen" )`
+
+There are outliers on the low end of the plot.
+
+`quantile(df$energy, 0.25)`
+
+First quantile = 0.553
+
+`quantile(df$energy, 0.75)`
+
+Third quantile = 0.766
+
+50% of the outliers go from 0.553 to 0.766.
+
+### Distributions
+
+#### histograms
+
+`hist(df$popularity,`
+
+`main = "Histogram of Acousticness",`
+
+`xlab = "acousticness",`
+
+`ylab = "Frequency",`
+
+`col = "lightgreen" )`
+
+`hist(df$duration_min,`
+
+`main = "Histogram of Acousticness",`
+
+`xlab = "acousticness",`
+
+`ylab = "Frequency",`
+
+`col = "lightgreen" )`
+
+`hist(df$danceability,`
+
+`main = "Histogram of Acousticness",`
+
+`xlab = "acousticness",`
+
+`ylab = "Frequency",`
+
+`col = "lightgreen" )`
+
+`hist(df$energy,`
+
+`main = "Histogram of Acousticness",`
+
+`xlab = "acousticness",`
+
+`ylab = "Frequency",`
+
+`col = "lightgreen" )`
+
+### Top Artists
+
+`top_artists <- df |>`
+
+`select(artists) |>`
+
+`group_by(artists) |>`
+
+`summarize(count = n()) |>`
+
+`arrange(desc(count)) |>`
+
+`head(20)`
+
+### Top artists by country (top 5 countries with the most users)
+
+`top_artists_country <- df |>`
+
+`filter(country %in% c("US", "BR", "GB", "MX", "IN")) |>`
+
+`select(country, artists) |>`
+
+`group_by(country, artists) |>`
+
+`summarize(count = n()) |>`
+
+`arrange(desc(count)) |>`
+
+`slice(1:10)`
+
+### Top Songs
+
+`top_songs <- df |> select(name, artists) |>`
+
+`group_by(name) |>`
+
+`summarize(count = n()) |>`
+
+`arrange(desc(count)) |>`
+
+`slice(1:10)`
+
+### Top artist by country
+
+`all_countries_artist <- df |>`
+
+`select(country, artists) |>`
+
+`group_by(country, artists) |>`
+
+`summarize(count = n()) |>`
+
+`slice_max(order_by = count, n = 1)`
+
+### Top song by country
+
+`all_countries_song <- df |>`
+
+`select(name, country, artists) |>`
+
+`group_by(country, name) |>`
+
+`summarize(count = n()) |>`
+
+`slice_max(order_by = count, n = 1) |>`
+
+`ungroup() |>`
+
+`select(country, name, count)`
+
+## Regional Trends
+
+### Divide data frame by continent
+
+`north_america <- df |>`
+
+`filter(country %in% c("US", "MX", "CA"))`
+
+`latin_america <- df |>`
+
+`filter(country %in% c("AR", "BO", "BR", "CL", "CO", "CR", "DO", "EC", "GT", "HN", "MX", "NI", "PA", "PE", "PY", "SV", "UY", "VE"))`
+
+`europe <- df |>`
+
+`filter(country %in% c("AT", "BE", "BG", "BY", "CH", "CZ", "DE", "DK", "EE", "ES", "FI", "FR", "GB", "GR", "HU", "IE", "IS", "IT", "LT", "LU", "LV", "NL", "NO", "PL", "PT", "RO", "SE", "SK", "UA"))`
+
+`asia <- df |>`
+
+`filter(country %in% c("AE", "HK", "ID", "IL", "IN", "JP", "KR", "KZ", "MY", "PH", "PK", "SA", "SG", "TH", "TR", "TW", "VN"))`
+
+`africa <- df |>`
+
+`filter(country %in% c("ZA", "NG", "MA", "EG"))`
+
+`oceania <- df |>`
+
+`filter(country %in% c("AU", "NZ"))`
+
+`global <- df |>`
+
+`filter(country == "GO")`
+
+### North America
+
+#### top songs
+
+`north_top_songs <- north_america |>`
+
+`select(name, artists) |>`
+
+`group_by(name, artists) |>`
+
+`summarize(count = n()) |>`
+
+`arrange(desc(count)) |>`
+
+`head(20)`
+
+#### top artists
+
+`north_top_artists <- north_america |>`
+
+`select(artists) |>`
+
+`group_by(artists) |>`
+
+`summarize(count = n()) |>`
+
+`arrange(desc(count)) |>`
+
+`head(10)`
+
+#### statistics
+
+Select the columns
+
+`north_cols <- c("snapshot_date", "popularity", "is_explicit", "duration_min", "danceability", "energy", "key", "loudness", "mode", "speechiness", "acousticness", "instrumentalness")`
+
+Create an empty list to store the results
+
+`north_stats_list <- list()`
+
+Loop through the selected columns
+
+`for (col in north_cols) {`
+
+`north_stats_list[[col]] <- data.frame(`
+
+`Statistic = c("Min", "Mean", "Max"),`
+
+`Value = c(min(north_america[[col]]),`
+
+`mean(north_america[[col]]),`
+
+`max(north_america[[col]]))`
+
+`)`
+
+`}`
+
+Combine results into a single data frame
+
+`north_stats <- do.call(cbind, north_stats_list)`
+
+North America stats summary:
+
+`dim(north_america)`
+
+Length: 60,034 rows (4.1%)
+
+`north_stats$popularity.Value[2]`
+
+popularity mean = 86.04
+
+`north_stats$is_explicit.Value[2]`
+
+is explicit mean = 0.46
+
+`north_stats$danceability.Value[2]`
+
+danceability mean = 0.67
+
+`north_stats$energy.Value[2]`
+
+energy mean = 0.64
+
+`north_stats$speechiness.Value[2]`
+
+speechiness mean = 0.075
+
+`north_stats$duration_min.Value[2]`
+
+duration mean = 3.24
+
+`north_stats$key.Value[2]`
+
+key mean = 5.62
+
+`north_stats$instrumentalness.Value[2]`
+
+instrumentalness mean = 0.009
+
+`north_stats$mode.Value[2]`
+
+mode mean = 0.62
+
+Note: the same process was used for the rest of the continents (Latin America, Europe, Asia, Africa, and Oceania).
+
+Using the length of each continent data frame, the percentages of each one were calculated and saved in a new data frame:
+
+`continent_percentage <- data.frame(`
+
+`Continent = c("North America", "Latin America", "Europe", "Asia", "Africa", "Oceania"),`
+
+`Percentage = c(4.1, 24.7, 39.7, 23.3, 5.5, 2.7)`
+
+`)`
