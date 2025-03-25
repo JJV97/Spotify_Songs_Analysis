@@ -1,7 +1,3 @@
----
----
----
-
 # Regional Trends and Analysis of Spotify 2024 Top Songs
 
 This analysis presents the cleaning, structuring, and Exploratory Data Analysis for the Top Spotify Songs in 73 countries, sourced from Kaggle.
