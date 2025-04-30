@@ -35,7 +35,7 @@ Logistic Regression Model Report with both code and commentary.
 
 ### Tableau Visualizations
 
-Please follow this link to Tablueau Public to see the project visualizations:
+Please follow this link to Tableau Public to see the project visualizations:
 
 [Spotify Charts](https://public.tableau.com/views/spotify_charts_17353242293170/SpotifyCorrelations?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link)		
 
